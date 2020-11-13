@@ -21,6 +21,7 @@ const appConfig = require("./configs/app");
 const exphbs = require("express-handlebars");
 const hbshelpers = require("handlebars-helpers");
 const { stat, lstat } = require("fs");
+const { FORMERR } = require("dns");
 const multihelpers = hbshelpers();
 const extNameHbs = "hbs";
 const hbs = exphbs.create({
@@ -85,30 +86,31 @@ io.on("connection", (socket) => {
       io.sockets.emit("letter", { letter: getRandomLetter() });
     }
   });
-
+  var puntosMaximos = 0;
+  var usuario = "";
   socket.on("listaBasta", (data) => {
     listResultados.push(data.listaValuesBasta);
     letra = data.letra.toLowerCase();
     console.log("LISTA LISTA: ", listResultados);
     console.log("Letra: ", data.letra);
-    verifyInput(listResultados, letra);
-    let i = 0;
-    let int = setInterval(frame, 1000);
 
-    function frame() {
-      if (i == 2) {
-        io.sockets.emit("toast", {
-          message: "Se terminó el juego",
-        });
+    for (var i = 0; i < listResultados.length; i++) {
+      var puntos = verifyPoints(listResultados[i], letra);
 
-        clearInterval(int);
-      } else {
-        i++;
-        io.sockets.emit("toast", {
-          message: `Basta ${i}`,
-        });
+      if (puntosMaximos < puntos) {
+        puntosMaximos = puntos;
+        usuario = listResultados[i][0]["user"];
       }
     }
+    console.log("Ganador", puntosMaximos);
+    io.sockets.emit("winner", {
+      message: `Ganó el jugador ${usuario} quien tiene ${puntosMaximos}`,
+    });
+  });
+
+  socket.on("basta", (data) => {
+    console.log("basta servidor", data);
+    io.sockets.emit("countdown", { message: "Bastaa" });
   });
 });
 
@@ -944,6 +946,32 @@ function getEmoji() {
 
   var emoji = emojis[Math.floor(Math.random() * emojis.length)];
   return emoji;
+}
+
+function verifyPoints(lista, letra) {
+  var points = 0;
+  var nombre = lista[0]["nombre"];
+  var color = lista[0]["color"];
+  var fruto = lista[0]["fruto"];
+  if (nombre.charAt(0) == letra) {
+    points = points + 10;
+  } else {
+    console.log("No cumplió nombre");
+  }
+
+  if (color.charAt(0) == letra) {
+    points = points + 10;
+  } else {
+    console.log("No cumplió  color");
+  }
+
+  if (fruto.charAt(0) == letra) {
+    points = points + 10;
+  } else {
+    console.log("No cumplió  fruto");
+  }
+  console.log("Puntos finales: ", points);
+  return points;
 }
 
 function verifyInput(lista, letra) {

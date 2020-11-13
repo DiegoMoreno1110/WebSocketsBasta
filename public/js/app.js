@@ -6,6 +6,7 @@ function makeToastMessage(message) {
 }
 
 window.socket = null;
+
 function connectToSocketIo() {
   let server = window.location.protocol + "//" + window.location.host;
   window.socket = io.connect(server);
@@ -20,7 +21,7 @@ function getUsername() {
   window.socket.on("usuario", function (data) {
     console.log("Usuario: ", data.usuario);
     const labelUsuario = document.getElementById("usuario");
-    labelUsuario.innerHTML = `Bienvenido:  ${data.usuario}`;
+    labelUsuario.innerHTML = `${data.usuario}`;
   });
 }
 
@@ -74,7 +75,42 @@ function clickPlay() {
   });
 }
 
-function setValuesBasta() {
+function basta() {
+  var statusGame = "basta";
+  console.log("Bastaaa");
+  window.socket.emit("basta", statusGame);
+}
+
+let server = window.location.protocol + "//" + window.location.host;
+window.socket = io.connect(server);
+
+window.socket.on("countdown", function (data) {
+  console.log(data);
+  let i = 0;
+  let int = setInterval(frame, 1000);
+  document.getElementById("btn-basta").disabled = true;
+
+  function frame() {
+    if (i == 2) {
+      //AQUI SE TIENE QUE MANDAR AL GANADOR, PERO NO SE COMO
+      clearInterval(int);
+      endGame();
+    } else {
+      i++;
+      makeToastMessage(`Un jugador ya hizo basta: Basta ${i}`);
+    }
+  }
+});
+
+window.socket.on("winner", function (data) {
+  console.log("GANADOR", data.message);
+  const ganadorLabel = document.getElementById("ganador");
+  ganadorLabel.innerHTML = data.message;
+  const buttonBasta = document.getElementById("btn-basta");
+  buttonBasta.style["display"] = "none";
+});
+
+/*function setValuesBasta() {
   var listaValuesBasta = [];
   listaValuesBasta.push({
     nombre: document.getElementById("nombre").value,
@@ -94,13 +130,41 @@ function setValuesBasta() {
   let server = window.location.protocol + "//" + window.location.host;
   window.socket = io.connect(server);
 
+  window.socket.on("basta", function(data){
+    let i = 0;
+    let int = setInterval(frame, 1000);
+
+    function frame() {
+      if (i == 2) {
+        
+        //AQUI SE TIENE QUE MANDAR AL GANADOR, PERO NO SE COMO
+        clearInterval(int);
+      } else {
+        i++;
+        makeToastMessage(`Basta ${i}`)
+      }
+    }
+  });
+  })
+
   window.socket.on("puntos", function (data) {
     console.log(data.puntos);
   });
-}
+}*/
 
-function end() {
-  alert("Se termino el juego");
+function endGame() {
+  var listaValuesBasta = [];
+  const labelUsuario = document.getElementById("usuario");
+  listaValuesBasta.push({
+    user: document.getElementById("usuario").innerHTML,
+    nombre: document.getElementById("nombre").value,
+    color: document.getElementById("color").value,
+    fruto: document.getElementById("fruto").value,
+  });
+  window.socket.emit("listaBasta", {
+    listaValuesBasta: listaValuesBasta,
+    letra: l,
+  });
 }
 
 $(function () {
