@@ -58,6 +58,7 @@ app.use('/', webRoutes);
 
 
 const listaUsuarios = []
+const listResultados = []
 
 var counter = 0;
 
@@ -73,16 +74,21 @@ io.on('connection', (socket) => {
 
     io.sockets.emit('toast', { message: `Hay ${counter} usuarios en el juego`});
     
-    if (listaUsuarios.length >= 3){
-      io.sockets.emit('clickPlay', {status: true})
+    if (listaUsuarios.length >= 2){
+      io.sockets.emit('clickPlay', {status: true});
       io.sockets.emit('toast', { message: `Ya puede iniciar el juego con los otros jugadores`});
       io.sockets.emit('letter', {letter: getRandomLetter()})
     }
+  });
 
-    socket.on('listaBasta', (data) =>{
-      console.log("Lista: ", data)
-    });
+  socket.on('listaBasta', (data) =>{
 
+    listResultados.push(data.listaValuesBasta);
+    console.log("LISTA LISTA: ", listResultados);
+    console.log("Lista: ", data.listaValuesBasta);
+    console.log("Letra: ", data.letra)
+
+    verifyInput(listResultados, data.letra.toLowerCase());
   });
 
     /*
@@ -114,10 +120,42 @@ function getEmoji(){
 }
 
 function verifyInput(lista, letra){
+
+  var points = 0
+
   for(var i = 0; i < lista.length ; i ++){
 
+    var nombre = lista[i][0]["nombre"];
+    var color = lista[i][0]["color"];
+    var fruto = lista[i][0]["fruto"];
+
+    console.log("Nombre:" , nombre);
+
+    if (nombre.charAt(0) == letra){
+      points = points + 10
+    }else{
+      console.log("Valimos vrga nombre");
+    }
+
+    if (color.charAt(0) == letra){
+      points = points + 10
+    }else{
+      console.log("Valimos vrga color");
+    }
+
+    if (fruto.charAt(0) == letra){
+      points = points + 10
+    }else{
+      console.log("Valimos vrga fruto");
+    }
+
   }
+
+  console.log("Puntos finales: ", points);
+  return points;
+
 }
+
 
 
 // App init

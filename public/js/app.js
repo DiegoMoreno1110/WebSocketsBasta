@@ -24,6 +24,8 @@ function getUsername(){
     });
 }
 
+var l= ''
+
 function getLetter(){
     let server = window.location.protocol + "//" + window.location.host;
     window.socket = io.connect(server);
@@ -31,6 +33,7 @@ function getLetter(){
         console.log("letter: ", data.letter);
         const letterLabel = document.getElementById("letra");
         letterLabel.innerHTML = data.letter;
+        l = data.letter; 
     });
 }
 
@@ -70,7 +73,7 @@ function setValuesBasta(){
     });
 
     console.log("ListaBasta: ", listaValuesBasta);
-    window.socket.emit('listaBasta', listaValuesBasta);
+    window.socket.emit('listaBasta', {listaValuesBasta: listaValuesBasta, letra: l});
 }
 
 
