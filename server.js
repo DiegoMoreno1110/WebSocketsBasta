@@ -59,33 +59,39 @@ app.use("/", express.static(__dirname + "/public"));
 // Routes
 app.use("/", webRoutes);
 
-const listaUsuarios = [];
+var listaUsuarios = [];
 const listResultados = [];
 var letra = "";
 
 var counter = 0;
+var statusGame = false;
 
 io.on("connection", (socket) => {
   socket.emit("usuario", { usuario: getEmoji() });
+  if (statusGame && listResultados.length > 2) {
+    io.to(socket.id).emit("toast", { message: "no puede jugar" });
+  } else if (!statusGame && listResultados.length <= 2) {
+    socket.on("messageToServer", (data) => {
+      listaUsuarios.push(socket.id);
+      counter++;
+      console.log("messageReceivedFromClient: ", listaUsuarios);
+      console.log("Data", data);
 
-  socket.on("messageToServer", (data) => {
-    counter++;
-    listaUsuarios.push(socket.id);
-    console.log("messageReceivedFromClient: ", listaUsuarios);
-    console.log("Data", data);
-
-    io.sockets.emit("toast", {
-      message: `Hay ${counter} usuarios en el juego`,
-    });
-
-    if (listaUsuarios.length >= 2) {
-      io.sockets.emit("clickPlay", { status: true });
       io.sockets.emit("toast", {
-        message: `Ya puede iniciar el juego con los otros jugadores`,
+        message: `Hay ${listaUsuarios.length} usuarios en el juego`,
       });
-      io.sockets.emit("letter", { letter: getRandomLetter() });
-    }
-  });
+
+      if (listaUsuarios.length == 2) {
+        io.sockets.emit("clickPlay", { status: true });
+        statusGame = true;
+        io.sockets.emit("toast", {
+          message: `Ya puede iniciar el juego con los otros jugadores`,
+        });
+        io.sockets.emit("letter", { letter: getRandomLetter() });
+      }
+    });
+  }
+
   var puntosMaximos = 0;
   var usuario = "";
   socket.on("listaBasta", (data) => {
@@ -96,6 +102,7 @@ io.on("connection", (socket) => {
 
     for (var i = 0; i < listResultados.length; i++) {
       var puntos = verifyPoints(listResultados[i], letra);
+      io.to(socket).emit("toast", { message: "hola" });
 
       if (puntosMaximos < puntos) {
         puntosMaximos = puntos;
@@ -106,6 +113,8 @@ io.on("connection", (socket) => {
     io.sockets.emit("winner", {
       message: `Ganó el jugador ${usuario} quien tiene ${puntosMaximos}`,
     });
+    statusGame = false;
+    listaUsuarios = [];
   });
 
   socket.on("basta", (data) => {
@@ -953,54 +962,23 @@ function verifyPoints(lista, letra) {
   var nombre = lista[0]["nombre"];
   var color = lista[0]["color"];
   var fruto = lista[0]["fruto"];
-  if (nombre.charAt(0) == letra) {
+  if (nombre.charAt(0).toLowerCase() == letra) {
     points = points + 10;
   } else {
     console.log("No cumplió nombre");
   }
 
-  if (color.charAt(0) == letra) {
+  if (color.charAt(0).toLowerCase() == letra) {
     points = points + 10;
   } else {
     console.log("No cumplió  color");
   }
 
-  if (fruto.charAt(0) == letra) {
+  if (fruto.charAt(0).toLowerCase() == letra) {
     points = points + 10;
   } else {
     console.log("No cumplió  fruto");
   }
-  console.log("Puntos finales: ", points);
-  return points;
-}
-
-function verifyInput(lista, letra) {
-  var points = 0;
-
-  for (var i = 0; i < lista.length; i++) {
-    var nombre = lista[i][0]["nombre"];
-    var color = lista[i][0]["color"];
-    var fruto = lista[i][0]["fruto"];
-
-    if (nombre.charAt(0) == letra) {
-      points = points + 10;
-    } else {
-      console.log("No cumplió nombre");
-    }
-
-    if (color.charAt(0) == letra) {
-      points = points + 10;
-    } else {
-      console.log("No cumplió  color");
-    }
-
-    if (fruto.charAt(0) == letra) {
-      points = points + 10;
-    } else {
-      console.log("No cumplió  fruto");
-    }
-  }
-
   console.log("Puntos finales: ", points);
   return points;
 }

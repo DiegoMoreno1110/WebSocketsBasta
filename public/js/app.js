@@ -87,12 +87,11 @@ window.socket = io.connect(server);
 window.socket.on("countdown", function (data) {
   console.log(data);
   let i = 0;
-  let int = setInterval(frame, 1000);
+  let int = setInterval(frame, 900);
   document.getElementById("btn-basta").disabled = true;
 
   function frame() {
-    if (i == 2) {
-      //AQUI SE TIENE QUE MANDAR AL GANADOR, PERO NO SE COMO
+    if (i == 10) {
       clearInterval(int);
       endGame();
     } else {
@@ -110,47 +109,10 @@ window.socket.on("winner", function (data) {
   buttonBasta.style["display"] = "none";
 });
 
-/*function setValuesBasta() {
-  var listaValuesBasta = [];
-  listaValuesBasta.push({
-    nombre: document.getElementById("nombre").value,
-    color: document.getElementById("color").value,
-    fruto: document.getElementById("fruto").value,
-  });
-
-  console.log("ListaBasta: ", listaValuesBasta);
-
-  window.socket.emit("listaBasta", {
-    listaValuesBasta: listaValuesBasta,
-    letra: l,
-  });
-
-  window.socket.emit("basta", "Se presionó basta");
-
-  let server = window.location.protocol + "//" + window.location.host;
-  window.socket = io.connect(server);
-
-  window.socket.on("basta", function(data){
-    let i = 0;
-    let int = setInterval(frame, 1000);
-
-    function frame() {
-      if (i == 2) {
-        
-        //AQUI SE TIENE QUE MANDAR AL GANADOR, PERO NO SE COMO
-        clearInterval(int);
-      } else {
-        i++;
-        makeToastMessage(`Basta ${i}`)
-      }
-    }
-  });
-  })
-
-  window.socket.on("puntos", function (data) {
-    console.log(data.puntos);
-  });
-}*/
+window.socket.on("puntos", function (data) {
+  const puntos = document.getElementById("puntos");
+  puntos.innerHTML = "Tus puntos" + data.message;
+});
 
 function endGame() {
   var listaValuesBasta = [];
