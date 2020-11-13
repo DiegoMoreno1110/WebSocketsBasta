@@ -44,6 +44,9 @@ function aceptar() {
 
     const buttonPlay = document.getElementById("clickPlay");
     buttonPlay.style["display"] = "block"
+
+    const salaP = document.getElementById("sala");
+    salaP.innerHTML = "Está en espera de que un jugador entre"
     
 
 }
@@ -58,8 +61,19 @@ function clickPlay(){
     window.socket.on('clickPlay', function (data) {
         status = data.status
         if(status){
+
+            const buttonEntar = document.getElementById("aceptar");
+            buttonEntar.style["display"] = "none"
+
             const div = document.getElementById("containerForms")
             div.style["display"] = "block";
+
+            const buttonPlay = document.getElementById("clickPlay");
+            buttonPlay.style["display"] = "none"
+
+            const salaP = document.getElementById("sala");
+            salaP.innerHTML = ""
+
         }
     });
 }
@@ -73,9 +87,20 @@ function setValuesBasta(){
     });
 
     console.log("ListaBasta: ", listaValuesBasta);
+    
     window.socket.emit('listaBasta', {listaValuesBasta: listaValuesBasta, letra: l});
-}
 
+    window.socket.emit('basta', "Se presionó basta");
+
+    let server = window.location.protocol + "//" + window.location.host;
+    window.socket = io.connect(server);
+    
+    window.socket.on('puntos', function (data) {
+        console.log(data.puntos);
+    });
+
+
+}
 
 $(function () {
     connectToSocketIo();
