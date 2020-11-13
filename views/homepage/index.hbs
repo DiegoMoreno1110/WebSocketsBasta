@@ -1,11 +1,35 @@
 <main role="main" class="container">
   <div class="starter-template">
-    <h1>Bootstrap starter template</h1>
-    <p class="lead">
-      Use this document as a way to quickly start any new project.<br> All you get is this text and a mostly barebones HTML document.
+    <h1>Basta Game</h1>
+    <p class="lead" id="usuario">
+      
     </p>
-    <p>
-      Source: <a href="https://getbootstrap.com/docs/4.0/examples/" target="_blank">https://getbootstrap.com/docs/4.0/examples/</a>
-    </p>
+    
+    <div class="row">
+        <div class="col">
+          <button class="btn btn-success" onclick="aceptar();" id="aceptar">
+            Entrar
+          </button>
+          <button class="btn btn-success" onclick="clickPlay();" style="display: none;"  id="clickPlay">
+            Jugar
+          </button>
+        </div>
+    </div>
+    
+
+    <div class="row" style="display: none;" id="containerForms">
+        <div class="col">
+          <p>Letra:</p>
+          <p id="letra"></p>
+          <input type="text" id="nombre" placeholder="nombre">
+          <input type="text" id="color" placeholder="color">
+          <input type="text" id="fruto" placeholder="fruto">
+          <button class="btn btn-success" onclick="setValuesBasta();">
+            Basta!
+          </button>
+        </div>
+    </div>
+
+
   </div>
 </main>

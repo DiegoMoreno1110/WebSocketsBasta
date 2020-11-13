@@ -11,6 +11,8 @@ let passport = require('passport');
 // Express app creation
 const app = express();
 
+const server=  require('http').Server(app);
+const io = require('socket.io')(server);
 
 // Configurations
 const appConfig = require('./configs/app');
@@ -18,6 +20,7 @@ const appConfig = require('./configs/app');
 // View engine configs
 const exphbs = require('express-handlebars');
 const hbshelpers = require("handlebars-helpers");
+const { stat, lstat } = require('fs');
 const multihelpers = hbshelpers();
 const extNameHbs = 'hbs';
 const hbs = exphbs.create({
@@ -53,7 +56,61 @@ app.use('/', express.static(__dirname + '/public'));
 // Routes
 app.use('/', webRoutes);
 
+
+const listaUsuarios = []
+
+var counter = 0;
+
+io.on('connection', (socket) => {
+
+  socket.emit('usuario', {usuario: socket.id});
+
+  socket.on('messageToServer', (data) => {
+    counter++;
+    listaUsuarios.push(socket.id);
+    console.log('messageReceivedFromClient: ', listaUsuarios);
+    console.log("Data", data)
+
+    io.sockets.emit('toast', { message: `Hay ${counter} usuarios en el juego`});
+    
+    if (listaUsuarios.length >= 2){
+      io.sockets.emit('clickPlay', {status: true})
+      io.sockets.emit('toast', { message: `Ya puede iniciar el juego con los otros jugadores`});
+      io.sockets.emit('letter', {letter: getRandomLetter()})
+    }
+
+    socket.on('listaBasta', (data) =>{
+      console.log("Lista: ", data)
+    });
+
+  });
+
+    /*
+    setInterval(() => {
+
+      socket.emit('toast', { message: `Message: ${i}`});
+      i++;
+  
+    }, 3000);
+    */
+});
+
+function getRandomLetter() {
+  const letters = "ABCDEFGHIJKLMNÑOPQRSTUVWYZ"
+  const randomLetter = letters[Math.floor(Math.random() * letters.length)]
+  console.log("RL: ", randomLetter)
+  
+  return randomLetter
+}
+
+function verifyInput(lista, letra){
+  for(var i = 0; i < lista.length ; i ++){
+
+  }
+}
+
+
 // App init
-app.listen(appConfig.expressPort, () => {
+server.listen(appConfig.expressPort, () => {
   console.log(`Server is listenning on ${appConfig.expressPort}! (http://localhost:${appConfig.expressPort})`);
 });
